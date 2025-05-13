@@ -6,29 +6,6 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 export default function EletronicoCard({ item, vazio }) {
   const [nomeLocal, setNomeLocal] = useState('Buscando...');
 
-  useEffect(() => {
-    const fetchLocalNome = async () => {
-      if (item?.localDescarte) {
-        try {
-          const docRef = doc(db, 'locations', item.localDescarte); // nome da sua collection
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setNomeLocal(docSnap.data().nome || 'Sem nome');
-          } else {
-            setNomeLocal('Local não encontrado');
-          }
-        } catch (error) {
-          console.error('Erro ao buscar local:', error);
-          setNomeLocal('Erro ao buscar local');
-        }
-      } else {
-        setNomeLocal('Sem local');
-      }
-    };
-
-    fetchLocalNome();
-  }, [item.localDescarte]);
-
   if (vazio) {
     return (
       <View style={styles.card}>
@@ -40,63 +17,86 @@ export default function EletronicoCard({ item, vazio }) {
         </View>
       </View>
     );
-  }
+  } else {
+    useEffect(() => {
+      const fetchLocalNome = async () => {
+        if (item?.localDescarte) {
+          try {
+            const docRef = doc(db, 'locations', item.localDescarte); // nome da sua collection
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              setNomeLocal(docSnap.data().nome || 'Sem nome');
+            } else {
+              setNomeLocal('Local não encontrado');
+            }
+          } catch (error) {
+            console.error('Erro ao buscar local:', error);
+            setNomeLocal('Erro ao buscar local');
+          }
+        } else {
+          setNomeLocal('Sem local');
+        }
+      };
 
-  // Função para converter qualquer formato de timestamp para Date
-  const parseDate = (timestamp) => {
-    if (!timestamp) return null;
-    
-    // Se for um objeto Firestore Timestamp
-    if (typeof timestamp.toDate === 'function') {
-      return timestamp.toDate();
-    }
-    
-    // Se for um objeto {_seconds, _nanoseconds} (seu caso)
-    if (timestamp._seconds && timestamp._nanoseconds) {
-      return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
-    }
-    
-    // Se for um objeto {seconds, nanoseconds} (sem underline)
-    if (timestamp.seconds && timestamp.nanoseconds) {
-      return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-    }
-    
-    // Se for uma string ISO
-    if (typeof timestamp === 'string') {
-      return new Date(timestamp);
-    }
-    
-    // Se já for um objeto Date
-    if (timestamp instanceof Date) {
-      return timestamp;
-    }
-    
-    return null;
-  };
+      fetchLocalNome();
+    }, [item.localDescarte]);
 
-  const dateObject = parseDate(item.criadoEm);
-  const dataFormatada = dateObject 
-    ? dateObject.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }) 
-    : 'Data desconhecida';
+    // Função para converter qualquer formato de timestamp para Date
+    const parseDate = (timestamp) => {
+      if (!timestamp) return null;
+      
+      // Se for um objeto Firestore Timestamp
+      if (typeof timestamp.toDate === 'function') {
+        return timestamp.toDate();
+      }
+      
+      // Se for um objeto {_seconds, _nanoseconds} (seu caso)
+      if (timestamp._seconds && timestamp._nanoseconds) {
+        return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
+      }
+      
+      // Se for um objeto {seconds, nanoseconds} (sem underline)
+      if (timestamp.seconds && timestamp.nanoseconds) {
+        return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+      }
+      
+      // Se for uma string ISO
+      if (typeof timestamp === 'string') {
+        return new Date(timestamp);
+      }
+      
+      // Se já for um objeto Date
+      if (timestamp instanceof Date) {
+        return timestamp;
+      }
+      
+      return null;
+    };
 
-  return (
-    <View style={styles.card}>
-      {item.foto && <Image source={{ uri: item.foto }} style={styles.image} />}
-      <View style={styles.info}>
-        <Text style={styles.tipo}>{item.categoria}</Text>
-        <Text style={styles.marcaModelo}>{item.marca} - {item.modelo}</Text>
-        <View style={styles.materiais}>
-          <Text style={styles.material}>🗓️ Reciclado em: {dataFormatada}</Text>
-          <Text style={styles.material}>📍 Local: {nomeLocal}</Text>
-          <Text style={styles.material}>Pontos: {item.pontos || 0}</Text>
+    const dateObject = parseDate(item.criadoEm);
+    const dataFormatada = dateObject 
+      ? dateObject.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }) 
+      : 'Data desconhecida';
+    
+    return (
+      <View style={styles.card}>
+        {item.foto && <Image source={{ uri: item.foto }} style={styles.image} />}
+        <View style={styles.info}>
+          <Text style={styles.tipo}>{item.categoria}</Text>
+          <Text style={styles.marcaModelo}>{item.marca} - {item.modelo}</Text>
+          <View style={styles.materiais}>
+            <Text style={styles.material}>🗓️ Reciclado em: {dataFormatada}</Text>
+            <Text style={styles.material}>📍 Local: {nomeLocal}</Text>
+            <Text style={styles.material}>Pontos: {item.pontos || 0}</Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({

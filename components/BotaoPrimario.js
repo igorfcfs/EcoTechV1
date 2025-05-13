@@ -14,14 +14,23 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         backgroundColor: colors.background2,
-        padding: 15,
+        paddingVertical: 15,
+        paddingHorizontal: 20,
         borderRadius: 10,
         marginBottom: 15,
-        alignItems: 'center'
-      },
+        alignItems: 'center',
+        justifyContent: 'center', // <- isso garante a centralização vertical
+    },
+
     buttonText: {
         color: '#FFF',
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        textAlign: 'center',
+        textAlignVertical: 'center', // <- útil no Android
+        includeFontPadding: false, // <- remove espaço extra vertical no Android
+        alignSelf: 'center',
+        justifyContent: 'center'
     },
+
 })

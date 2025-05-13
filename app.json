@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ecotech",
+    "name": "ecotrash_app_api",
     "slug": "ecotrash_app_api",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,6 +23,17 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ee64194f-e6ff-4d7b-a1ea-d39e9d4a82de"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ee64194f-e6ff-4d7b-a1ea-d39e9d4a82de"
     }
   }
 }

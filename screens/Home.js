@@ -39,14 +39,14 @@ const HomeScreen = () => {
 
   return (
     <View style={general.container2}>
-      <Titulo text="Bem vindo ao EcoTrash" />
+      <Titulo text="Bem vindo ao EcoTech" />
       
       <View style={general.cardsContainer}>
         <Card descricao="Pontos Acumulados" quantidade={pontosAcumulados} />
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
       
-      <BotaoPrimario text="Ver Mapa" onPress={() => navigation.navigate('Mapa')} />
+      <BotaoPrimario text="Ver Locais" onPress={() => navigation.navigate('Locais')} />
       <BotaoPrimario text="Ver Relatório" onPress={() => navigation.navigate('Relatório')} />
       <BotaoPrimario text="Ver Perfil" onPress={() => navigation.navigate('Perfil')} />
       <View style={{marginTop: 60, width: '100%'}}>

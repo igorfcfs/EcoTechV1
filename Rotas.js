@@ -1,6 +1,6 @@
 import HomeScreen from './screens/Home';
 import RelatorioNavigation from './RelatorioNavigation'
-import MapaScreen from './screens/Mapa';
+import LocalNavigation from './LocalNavigation';
 import PerfilScreen from './screens/Perfil';
 import { createDrawerNavigator } from '@react-navigation/drawer'; //CRIA TODA A ESTRUTURA DO MENU
 
@@ -24,7 +24,7 @@ export default function Rotas() {
     <Drawer.Navigator> 
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Relatório" component={RelatorioNavigation} />
-      <Drawer.Screen name="Mapa" component={MapaScreen} />
+      <Drawer.Screen name="Locais" component={LocalNavigation} />
       <Drawer.Screen name="Perfil" component={PerfilScreen} />
     </Drawer.Navigator>
   );

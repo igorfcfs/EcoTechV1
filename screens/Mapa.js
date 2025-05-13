@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Linking, Alert, ActivityIndicator, StyleSheet, View, Text } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import CardLocais from '../components/CardLocais';
 import BotaoPrimario from '../components/BotaoPrimario';
 import { API_URL } from '../api';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 
 export default function Mapa() {
   const [userLocation, setUserLocation] = useState(null);
@@ -15,24 +16,24 @@ export default function Mapa() {
   const [locais, setLocais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const modalizeRef = useRef(null);
   const mapRef = useRef(null);
+
+  const route = useRoute();
+  const { destinoLatitude, destinoLongitude } = route.params || {};
 
   const fetchLocais = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/locais`);
 
-      if (!response.data || !Array.isArray(response.data)) {
-        throw new Error('Formato de dados inválido');
-      }
-
-      const locaisValidos = response.data.filter(local => 
+      const locaisValidos = (response.data || []).filter(local =>
         local?.coordenadas &&
-        typeof local.coordenadas._latitude === 'number' && 
+        typeof local.coordenadas._latitude === 'number' &&
         typeof local.coordenadas._longitude === 'number'
       );
-      
+
       setLocais(locaisValidos);
       setError(null);
     } catch (err) {
@@ -44,9 +45,8 @@ export default function Mapa() {
   };
 
   useEffect(() => {
-    const initializeMap = async () => {
+    const initialize = async () => {
       try {
-        // 1. Solicitar permissão de localização
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setError('Permissão de localização negada');
@@ -55,38 +55,44 @@ export default function Mapa() {
         }
         setHasLocationPermission(true);
 
-        // 2. Obter localização do usuário
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High
         });
         setUserLocation(location.coords);
 
-        // 3. Carregar pontos de coleta
         await fetchLocais();
-
-        // 4. Centralizar mapa na localização do usuário
-        if (mapRef.current) {
-          mapRef.current.animateToRegion({
-            latitude: location.coords.latitude,
-            ongitude: location.coords.longitude,
-            latitudeDelta: 0.01,  // Zoom mais próximo
-            longitudeDelta: 0.01,
-          }, 1000);
-        }
-
       } catch (err) {
         console.error('Erro na inicialização:', err);
         setError('Erro ao carregar o mapa');
+      } finally {
         setLoading(false);
       }
     };
 
-    initializeMap();
+    initialize();
 
-    // Atualizar pontos a cada 30 segundos
     const interval = setInterval(fetchLocais, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // ✅ Sempre que a tela for focada, centraliza o mapa
+  useFocusEffect(
+    useCallback(() => {
+      if (!mapRef.current) return;
+
+      const latitude = typeof destinoLatitude === 'number' ? destinoLatitude : userLocation?.latitude;
+      const longitude = typeof destinoLongitude === 'number' ? destinoLongitude : userLocation?.longitude;
+
+      if (latitude && longitude) {
+        mapRef.current.animateToRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }, 1000);
+      }
+    }, [destinoLatitude, destinoLongitude, userLocation])
+  );
 
   const handleMarkerPress = (local) => {
     setSelectedLocais(local);
@@ -112,10 +118,7 @@ export default function Mapa() {
         <Text style={styles.errorText}>
           Precisamos da sua permissão para mostrar sua localização
         </Text>
-        <BotaoPrimario 
-          text="Conceder Permissão" 
-          onPress={handleRetry} 
-        />
+        <BotaoPrimario text="Conceder Permissão" onPress={handleRetry} />
       </View>
     );
   }
@@ -133,10 +136,7 @@ export default function Mapa() {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <BotaoPrimario 
-          text="Tentar Novamente" 
-          onPress={handleRetry} 
-        />
+        <BotaoPrimario text="Tentar Novamente" onPress={handleRetry} />
       </View>
     );
   }
@@ -153,11 +153,10 @@ export default function Mapa() {
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-        showsUserLocation={true}  // Mostra o ponto azul padrão
+        showsUserLocation={true}
         showsMyLocationButton={true}
         loadingEnabled={true}
       >
-        {/* Marcador vermelho personalizado para o usuário */}
         {userLocation && (
           <Marker
             coordinate={{
@@ -165,12 +164,11 @@ export default function Mapa() {
               longitude: userLocation.longitude,
             }}
             title="Você está aqui"
-            pinColor="red" // Marcador vermelho
-            zIndex={2} // Garante que fique acima dos outros
+            pinColor="red"
+            zIndex={2}
           />
         )}
 
-        {/* Marcadores verdes para os pontos de coleta */}
         {locais.map((local) => (
           <Marker
             key={local.id}
@@ -181,12 +179,12 @@ export default function Mapa() {
             title={local.nome}
             description={local.endereco}
             onPress={() => handleMarkerPress(local)}
-            pinColor="green" // Marcador verde
+            pinColor="green"
           />
         ))}
       </MapView>
 
-      <Modalize 
+      <Modalize
         ref={modalizeRef}
         adjustToContentHeight={true}
         modalStyle={styles.modal}
@@ -195,9 +193,10 @@ export default function Mapa() {
         {selectedLocais && (
           <View style={styles.modalContent}>
             <CardLocais
-              imageUri={selectedLocais.imageUri}
+              imageUri={selectedLocais.imagem}
               nome={selectedLocais.nome}
               endereco={selectedLocais.endereco}
+              localId={selectedLocais.id}
             />
             {selectedLocais.site && (
               <BotaoPrimario
@@ -248,7 +247,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   siteButton: {
-    marginTop: 15,
     backgroundColor: '#1B5E20',
   },
 });
