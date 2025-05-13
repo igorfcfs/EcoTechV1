@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { general } from '../styles/index';
 import { auth } from '../firebaseConfig';
 import Card from '../components/CardEcoTrashs';
@@ -37,6 +37,21 @@ const RelatorioScreen = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const pontosPorCategoria = {
+  Pilhas: 5,
+  Baterias: 10,
+  Celulares: 100,
+  Computadores: 150,
+  Outros: 20,
+};
+  const relatorio = [
+    { categoria: 'Pilhas', quantidade: 0, porcentagem: 0 },
+    { categoria: 'Baterias', quantidade: 0, porcentagem: 0 },
+    { categoria: 'Celulares', quantidade: 0, porcentagem: 0 },
+    { categoria: 'Computadores', quantidade: 0, porcentagem: 0 },
+    { categoria: 'Outros', quantidade: 0, porcentagem: 0 },
+  ];
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Relatório de Reciclagem</Text>
@@ -46,16 +61,21 @@ const RelatorioScreen = () => {
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
 
-      {/* <FlatList
+      <FlatList
         data={relatorio}
         keyExtractor={(item) => item.categoria}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.categoria}</Text>
-            <Text style={styles.cardValue}>{item.quantidade} g</Text>
+            <Text style={styles.cardValue}>{item.quantidade}</Text>
+            <Text style={styles.percentage}>
+              {typeof item.porcentagem === 'number' 
+                ? `${Number(item.porcentagem.toFixed(2))}% do total` 
+                : item.porcentagem}
+            </Text>
           </View>
         )}
-      /> */}
+      />
     </View>
   );
 };

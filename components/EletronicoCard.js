@@ -87,8 +87,9 @@ export default function EletronicoCard({ item, vazio }) {
         {item.foto && <Image source={{ uri: item.foto }} style={styles.image} />}
         <View style={styles.info}>
           <Text style={styles.tipo}>{item.categoria}</Text>
-          <Text style={styles.marcaModelo}>{item.marca} - {item.modelo}</Text>
+          {/* <Text style={styles.marcaModelo}>{item.marca} - {item.modelo}</Text> */}
           <View style={styles.materiais}>
+            <Text style={styles.material}>Quantidade: {item.quantidade}</Text>
             <Text style={styles.material}>🗓️ Reciclado em: {dataFormatada}</Text>
             <Text style={styles.material}>📍 Local: {nomeLocal}</Text>
             <Text style={styles.material}>Pontos: {item.pontos || 0}</Text>

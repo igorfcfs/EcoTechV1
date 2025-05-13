@@ -1,150 +1,190 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator } from 'react-native';
-import { Feather, Entypo, Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Button, ActivityIndicator, Alert } from 'react-native';
+import * as Location from 'expo-location';
+import { getDocs, collection } from 'firebase/firestore';
+import { getDistance } from 'geolib';
 import axios from 'axios';
+
 import { auth } from '../firebaseConfig';
-import { API_URL } from '../api';
+import { db } from '../firebaseConfig';
+
+const categorias = [
+  { nome: 'Pilhas', imagem: require('../assets/pilhas.png') },
+  { nome: 'Baterias', imagem: require('../assets/baterias.png') },
+  { nome: 'Celulares', imagem: require('../assets/celulares.png') },
+  { nome: 'Computadores', imagem: require('../assets/computadores.png') },
+  { nome: 'Outros', imagem: require('../assets/outros.png') },
+];
+
+const pontosPorCategoria = {
+  Pilhas: 5,
+  Baterias: 10,
+  Celulares: 100,
+  Computadores: 150,
+  Outros: 20,
+};
 
 export default function ReciclarScreen({ navigation }) {
-  const [statusTampa, setStatusTampa] = useState('fechada');
-  const [dataEnviada, setDataEnviada] = useState(false);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [quantidade, setQuantidade] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
-  useEffect(() => {
-    setStatusTampa('abrindo');
-  }, []);
+  const verificarLixeira = async () => {
+    // Simula resposta da ESP32
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const validado = true; // Altere para false para simular erro
+        resolve(validado);
+      }, 1500);
+    });
+  };
 
-  useEffect(() => {
-    let timeout;
-
-    switch (statusTampa) {
-      case 'abrindo':
-        timeout = setTimeout(() => setStatusTampa('aberta'), 3000);
-        break;
-      case 'fechando':
-        timeout = setTimeout(() => setStatusTampa('fechada'), 3000);
-        break;
-      case 'escaneando_eletronico':
-        timeout = setTimeout(() => setStatusTampa('enviando_dados'), 3000);
-        break;
-      case 'enviando_dados':
-        timeout = setTimeout(() => setStatusTampa('dados_enviados'), 3000);
-        break;
-      default:
-        break;
-    }
-
-    return () => clearTimeout(timeout);
-  }, [statusTampa]);
-
-  useEffect(() => {
-    if (statusTampa === 'fechada') {
-      const timeout = setTimeout(() => setStatusTampa('escaneando_eletronico'), 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [statusTampa]);
-
-  useEffect(() => {
-    if (statusTampa === 'enviando_dados' && !dataEnviada) {
-      fetchData();
-    }
-  }, [statusTampa]);
-
-  const fetchData = async () => {
+  const getLocalDescarteMaisProximo = async () => {
     try {
-      const user = auth.currentUser;
-      if (!user) return;
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'É necessário permitir a localização para encontrar o local de descarte.');
+        return null;
+      }
 
-      const dadosEletronico = {
-        uid: user.uid,
-        categoria: 'Celular',
-        marca: 'Samsung',
-        modelo: 'M54',
-        foto: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaAzIZ98iOc06QSQV9ge6qJNG4_pCG2lo1UcuMI-XbT7jadFry_eH9ukFiey9ULagrtEY&usqp=CAU',
-        localDescarte: 'JWTYvvXQf8ytR1gKMPTfP',
-        pontos: 100
+      const location = await Location.getCurrentPositionAsync({});
+      const userCoords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
       };
 
-      const response = await axios.post(`${API_URL}/eletronicos`, dadosEletronico);
+      const snapshot = await getDocs(collection(db, 'locations'));
+      const locais = [];
 
-      if (response.status === 200 || response.status === 201) {
-        setDataEnviada(true);
-      }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const latitude = data.coordenadas?._latitude;
+        const longitude = data.coordenadas?._longitude;
+        console.log(data)
+
+        if (latitude && longitude) {
+          locais.push({
+            id: doc.id,
+            latitude,
+            longitude,
+          });
+        }
+      });
+
+      const locaisComDistancia = locais.map((local) => ({
+        ...local,
+        distancia: getDistance(userCoords, {
+          latitude: local.latitude,
+          longitude: local.longitude,
+        }),
+      }));
+
+      const locaisProximos = locaisComDistancia.filter((local) => local.distancia <= 2000);
+      console.log("Locais dentro de 1km: ", locaisProximos);
+      if (locaisProximos.length === 0) return null;
+
+      locaisProximos.sort((a, b) => a.distancia - b.distancia);
+      return locaisProximos[0].id;
     } catch (error) {
-      console.error('Erro ao enviar dados:', error.response?.data || error.message);
+      console.error('Erro ao obter local de descarte:', error);
+      return null;
     }
   };
 
-  const resetarCiclo = () => {
-    setDataEnviada(false);
-    navigation.goBack();
-    alert("Eletrônico novo em relatório");
+  const handleConfirmar = async () => {
+    const qtd = parseInt(quantidade);
+    if (!categoriaSelecionada || isNaN(qtd) || qtd <= 0) {
+      Alert.alert('Erro', 'Selecione uma categoria e informe uma quantidade válida.');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não autenticado.');
+      return;
+    }
+
+    setCarregando(true);
+
+    try {
+      const validado = await verificarLixeira();
+
+      if (!validado) {
+        Alert.alert('Lixeira vazia', 'Nenhum item foi detectado na lixeira.');
+        setCarregando(false);
+        return;
+      }
+
+      const localDescarteId = await getLocalDescarteMaisProximo();
+      if (!localDescarteId) {
+        Alert.alert('Erro', 'Não foi possível encontrar um local de descarte próximo.');
+        setCarregando(false);
+        return;
+      }
+
+
+      const pontos = pontosPorCategoria[categoriaSelecionada] * qtd;
+      
+      const dados = {
+        uid: user.uid,
+        categoria: categoriaSelecionada,
+        quantidade: qtd,
+        localDescarte: localDescarteId,
+        pontos
+      };
+
+      const response = await axios.post(`${API_URL}/eletronicos`, dados);
+      
+      if (response.status === 200 || response.status === 201) {
+        Alert.alert('Sucesso', 'Reciclagem registrada com sucesso!');
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Erro ao registrar eletrônico:', error.response?.data || error.message);
+      Alert.alert('Erro', 'Ocorreu um problema ao registrar o eletrônico.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Status da Lixeira</Text>
+      <Text style={styles.titulo}>Selecione a Categoria</Text>
 
-      <View style={styles.statusBox}>
-        {statusTampa === 'abrindo' && (
-          <>
-            <ActivityIndicator size="large" color="#1B5E20" />
-            <Text style={styles.statusTexto}>Abrindo a tampa...</Text>
-          </>
-        )}
-
-        {statusTampa === 'aberta' && (
-          <>
-            <Entypo name="lock-open" size={30} color="#1B5E20" />
-            <Text style={styles.statusAberta}>Tampa aberta</Text>
-            <Text style={styles.instrucao}>Insira seu eletrônico na lixeira</Text>
-            <View style={styles.botao}>
-              <Button title="Eletrônico Inserido" onPress={() => setStatusTampa('fechando')} color="#1B5E20" />
-            </View>
-          </>
-        )}
-
-        {statusTampa === 'fechando' && (
-          <>
-            <ActivityIndicator size="large" color="#1B5E20" />
-            <Text style={styles.statusTexto}>Fechando a tampa...</Text>
-          </>
-        )}
-
-        {statusTampa === 'fechada' && (
-          <>
-            <Ionicons name="lock-closed" size={30} color="#1B5E20" />
-            <Text style={styles.statusAberta}>Tampa fechada</Text>
-            <ActivityIndicator size="large" color="#1B5E20" />
-            <Text style={styles.instrucao}>Analisando eletrônico...</Text>
-          </>
-        )}
-
-        {statusTampa === 'escaneando_eletronico' && (
-          <>
-            <ActivityIndicator size="large" color="#1B5E20" />
-            <Text style={styles.statusTexto}>Escaneando eletrônico...</Text>
-          </>
-        )}
-
-        {statusTampa === 'enviando_dados' && (
-          <>
-            <ActivityIndicator size="large" color="#1B5E20" />
-            <Text style={styles.statusTexto}>Enviando dados do eletrônico...</Text>
-          </>
-        )}
-
-        {statusTampa === 'dados_enviados' && (
-          <>
-            <Feather name="check-circle" size={64} color="#1B5E20" />
-            <Text style={styles.statusTexto}>
-              Tudo Ok! Muito obrigado por contribuir com a Unibient, o planeta agradece!
-            </Text>
-            <View style={styles.botao}>
-              <Button title="Voltar" onPress={resetarCiclo} color="#1B5E20" />
-            </View>
-          </>
-        )}
+      <View style={styles.grid}>
+        {categorias.map((item) => (
+          <TouchableOpacity
+            key={item.nome}
+            style={[
+              styles.card,
+              categoriaSelecionada === item.nome && styles.cardSelecionado
+            ]}
+            onPress={() => setCategoriaSelecionada(item.nome)}
+          >
+            <Image source={item.imagem} style={styles.imagem} />
+            <Text style={styles.nomeCategoria}>{item.nome}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
+
+      {categoriaSelecionada && (
+        <>
+          <Text style={styles.label}>Informe a quantidade:</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            placeholder="Ex: 3"
+            value={quantidade}
+            onChangeText={setQuantidade}
+          />
+
+          {carregando ? (
+            <ActivityIndicator size="large" color="#1B5E20" style={{ marginTop: 20 }} />
+          ) : (
+            <Button title="Confirmar Reciclagem" onPress={handleConfirmar} color="#1B5E20" />
+          )}
+        </>
+      )}
     </View>
   );
 }
@@ -153,44 +193,57 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E8F5E9',
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 20,
   },
   titulo: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 30,
     color: '#2E7D32',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  statusBox: {
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  card: {
+    width: '48%',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 25,
-    width: '100%',
     alignItems: 'center',
-    elevation: 4,
+    padding: 10,
+    marginBottom: 15,
+    elevation: 3,
   },
-  statusTexto: {
-    marginTop: 10,
-    fontSize: 18,
-    color: '#555',
-    textAlign: 'center',
+  cardSelecionado: {
+    borderWidth: 2,
+    borderColor: '#2E7D32',
   },
-  statusAberta: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1B5E20',
-    textAlign: 'center',
+  imagem: {
+    width: 60,
+    height: 60,
+    resizeMode: 'contain',
+    marginBottom: 10,
   },
-  instrucao: {
+  nomeCategoria: {
     fontSize: 16,
-    marginVertical: 20,
-    textAlign: 'center',
     color: '#333',
+    fontWeight: '500',
   },
-  botao: {
+  label: {
+    fontSize: 16,
+    marginTop: 20,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#bbb',
+    borderRadius: 8,
+    padding: 10,
     marginTop: 10,
-    width: '100%',
+    marginBottom: 20,
+    backgroundColor: '#fff',
   },
 });
