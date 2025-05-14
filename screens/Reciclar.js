@@ -1,28 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, Button, ActivityIndicator, Alert, TouchableOpacity, Image, TextInput } from 'react-native';
-import * as Location from 'expo-location';
-import { getDocs, collection } from 'firebase/firestore';
-import { getDistance } from 'geolib';
 import axios from 'axios';
 import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
-import { db } from '../firebaseConfig';
-
-const categorias = [
-  { nome: 'Pilhas', imagem: require('../assets/pilhas.png') },
-  { nome: 'Baterias', imagem: require('../assets/baterias.png') },
-  { nome: 'Celulares', imagem: require('../assets/celulares.png') },
-  { nome: 'Computadores', imagem: require('../assets/computadores.png') },
-  { nome: 'Outros', imagem: require('../assets/outros.png') },
-];
-
-const pontosPorCategoria = {
-  Pilhas: 5,
-  Baterias: 10,
-  Celulares: 100,
-  Computadores: 150,
-  Outros: 20,
-};
+import ProcurarLocalMaisProximo from '../functions/ProcurarLocalMaisProximo';
+import { categorias, pontosPorCategoria } from '../functions/Data';
 
 export default function ReciclarScreen({ navigation }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
@@ -37,58 +19,6 @@ export default function ReciclarScreen({ navigation }) {
         resolve(validado);
       }, 1500);
     });
-  };
-
-  const getLocalDescarteMaisProximo = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão negada', 'É necessário permitir a localização para encontrar o local de descarte.');
-        return null;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const userCoords = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-
-      const snapshot = await getDocs(collection(db, 'locations'));
-      const locais = [];
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const latitude = data.coordenadas?._latitude;
-        const longitude = data.coordenadas?._longitude;
-        console.log(data)
-
-        if (latitude && longitude) {
-          locais.push({
-            id: doc.id,
-            latitude,
-            longitude,
-          });
-        }
-      });
-
-      const locaisComDistancia = locais.map((local) => ({
-        ...local,
-        distancia: getDistance(userCoords, {
-          latitude: local.latitude,
-          longitude: local.longitude,
-        }),
-      }));
-
-      const locaisProximos = locaisComDistancia.filter((local) => local.distancia <= 2000);
-      console.log("Locais dentro de 1km: ", locaisProximos);
-      if (locaisProximos.length === 0) return null;
-
-      locaisProximos.sort((a, b) => a.distancia - b.distancia);
-      return locaisProximos[0].id;
-    } catch (error) {
-      console.error('Erro ao obter local de descarte:', error);
-      return null;
-    }
   };
 
   const handleConfirmar = async () => {
@@ -115,13 +45,12 @@ export default function ReciclarScreen({ navigation }) {
         return;
       }
 
-      const localDescarteId = await getLocalDescarteMaisProximo();
+      const localDescarteId = await ProcurarLocalMaisProximo.getLocalDescarteMaisProximo();
       if (!localDescarteId) {
         Alert.alert('Erro', 'Não foi possível encontrar um local de descarte próximo.');
         setCarregando(false);
         return;
       }
-
 
       const pontos = pontosPorCategoria[categoriaSelecionada] * qtd;
       

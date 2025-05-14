@@ -1,5 +1,8 @@
-const [localMaisProximo, setLocalMaisProximo] = useState(null);
-const [nomeLocal, setNomeLocal] = useState('');
+import { Alert } from 'react-native';
+import * as Location from 'expo-location';
+import { getDocs, collection } from 'firebase/firestore';
+import { getDistance } from 'geolib';
+import { db } from '../firebaseConfig';
 
 const getLocalDescarteMaisProximo = async () => {
     try {
@@ -51,31 +54,4 @@ const getLocalDescarteMaisProximo = async () => {
     }
 };
 
-const fetchLocalMaisProximo = async () => {
-    const local = await getLocalDescarteMaisProximo();
-    setLocalMaisProximo(local);
-};
-
-const fetchLocalNome = async () => {
-  if (item?.localDescarte) {
-    try {
-      const docRef = doc(db, 'locations', item.localDescarte); // nome da sua collection
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setNomeLocal(docSnap.data().nome || 'Sem nome');
-      } else {
-        setNomeLocal('Local não encontrado');
-      }
-    } catch (error) {
-      console.error('Erro ao buscar local:', error);
-      setNomeLocal('Erro ao buscar local');
-    }
-  } else {
-    setNomeLocal('Sem local');
-  }
-};
-
-fetchLocalMaisProximo();
-fetchLocalNome();
-
-export default localMaisProximo;
+export default {getLocalDescarteMaisProximo};

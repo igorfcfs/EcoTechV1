@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ecotrash_app_api",
-    "slug": "ecotrash_app_api",
+    "name": "Ecotrash V1",
+    "slug": "ecotrash_v1",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,21 +19,23 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.igorfcfs.ecotrash_v1"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "ee64194f-e6ff-4d7b-a1ea-d39e9d4a82de"
-      }
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
+    "owner": "igorfcfs",
+    "extra": {
+      "eas": {
+        "projectId": "49153ded-a8a9-4462-898f-a5dcde7c63c9"
+      }
+    },
     "updates": {
-      "url": "https://u.expo.dev/ee64194f-e6ff-4d7b-a1ea-d39e9d4a82de"
+      "url": "https://u.expo.dev/49153ded-a8a9-4462-898f-a5dcde7c63c9"
     }
   }
 }
