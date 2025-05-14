@@ -9,6 +9,7 @@ import { API_URL } from '../api';
 const RelatorioScreen = () => {
   const [recycledEletronics, setRecycledEletronics] = useState(0);
   const [pontos, setPontos] = useState(0);
+  const [dadosCategoria, setDadosCategoria] = useState(null);
   const [error, setError] = useState(null);
   
   const fetchAnalytics = async () => {
@@ -23,6 +24,7 @@ const RelatorioScreen = () => {
 
       setRecycledEletronics(analytics.recycled_eletronics);
       setPontos(analytics.pontos);
+      setDadosCategoria(analytics.por_categoria);
       console.log(analytics)
     } catch (err){
       console.error('Erro ao buscar eletrônicos:', err);
@@ -37,20 +39,40 @@ const RelatorioScreen = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const quantidade = dadosCategoria ? {
+    pilhas: dadosCategoria["Pilhas"]?.quantidade || 0,
+    baterias: dadosCategoria["Baterias"]?.quantidade || 0,
+    celulares: dadosCategoria["Celulares"]?.quantidade || 0,
+    computadores: dadosCategoria["Computadores"]?.quantidade || 0,
+    outros: dadosCategoria["Outros"]?.quantidade || 0
+  } : {};
+
+  const porcentagem = dadosCategoria ? {
+    pilhas: dadosCategoria["Pilhas"]?.porcentagem || 0,
+    baterias: dadosCategoria["Baterias"]?.porcentagem || 0,
+    celulares: dadosCategoria["Celulares"]?.porcentagem || 0,
+    computadores: dadosCategoria["Computadores"]?.porcentagem || 0,
+    outros: dadosCategoria["Outros"]?.porcentagem || 0
+  } : {};
+
+
   const pontosPorCategoria = {
-  Pilhas: 5,
-  Baterias: 10,
-  Celulares: 100,
-  Computadores: 150,
-  Outros: 20,
-};
-  const relatorio = [
-    { categoria: 'Pilhas', quantidade: 0, porcentagem: 0 },
-    { categoria: 'Baterias', quantidade: 0, porcentagem: 0 },
-    { categoria: 'Celulares', quantidade: 0, porcentagem: 0 },
-    { categoria: 'Computadores', quantidade: 0, porcentagem: 0 },
-    { categoria: 'Outros', quantidade: 0, porcentagem: 0 },
+    Pilhas: 5,
+    Baterias: 10,
+    Celulares: 100,
+    Computadores: 150,
+    Outros: 20,
+  };
+  
+  const relatorioCompleto = [
+    { categoria: 'Pilhas', quantidade: quantidade.pilhas, porcentagem: porcentagem.pilhas },
+    { categoria: 'Baterias', quantidade: quantidade.baterias, porcentagem: porcentagem.baterias },
+    { categoria: 'Celulares', quantidade: quantidade.celulares, porcentagem: porcentagem.celulares },
+    { categoria: 'Computadores', quantidade: quantidade.computadores, porcentagem: porcentagem.computadores },
+    { categoria: 'Outros', quantidade: quantidade.outros, porcentagem: porcentagem.outros },
   ];
+
+  const relatorio = relatorioCompleto.filter(item => item.quantidade > 0);
 
   return (
     <View style={styles.container}>
@@ -60,22 +82,27 @@ const RelatorioScreen = () => {
         <Card descricao="Pontos Acumulados" quantidade={pontos} />
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
+      
+      {dadosCategoria ? (
+        <FlatList
+          data={relatorio}
+          keyExtractor={(item) => item.categoria}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>{item.categoria}</Text>
+              <Text style={styles.cardValue}>{item.quantidade}</Text>
+              <Text style={styles.percentage}>
+                {typeof item.porcentagem === 'number' 
+                  ? `${Number(item.porcentagem.toFixed(2))}% do total` 
+                  : item.porcentagem}
+              </Text>
+            </View>
+          )}
+        />
+      ) : (
+        <Text>Carregando dados...</Text>
+      )}
 
-      <FlatList
-        data={relatorio}
-        keyExtractor={(item) => item.categoria}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{item.categoria}</Text>
-            <Text style={styles.cardValue}>{item.quantidade}</Text>
-            <Text style={styles.percentage}>
-              {typeof item.porcentagem === 'number' 
-                ? `${Number(item.porcentagem.toFixed(2))}% do total` 
-                : item.porcentagem}
-            </Text>
-          </View>
-        )}
-      />
     </View>
   );
 };

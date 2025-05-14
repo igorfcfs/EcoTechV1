@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Button, ActivityIndicator, Alert, TouchableOpacity, Image, TextInput } from 'react-native';
 import * as Location from 'expo-location';
 import { getDocs, collection } from 'firebase/firestore';
 import { getDistance } from 'geolib';
 import axios from 'axios';
-
+import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
 import { db } from '../firebaseConfig';
 
