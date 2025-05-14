@@ -13,6 +13,33 @@ const RelatorioScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Função para converter timestamp para objeto Date
+  const parseDate = (timestamp) => {
+    if (!timestamp) return new Date(0);
+
+    if (typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+
+    if (timestamp._seconds && timestamp._nanoseconds) {
+      return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
+    }
+
+    if (timestamp.seconds && timestamp.nanoseconds) {
+      return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+    }
+
+    if (typeof timestamp === 'string') {
+      return new Date(timestamp);
+    }
+
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
+
+    return new Date(0);
+  };
+
   const fetchEletronicos = async () => {
     try {
       const user = auth.currentUser;
@@ -22,7 +49,11 @@ const RelatorioScreen = ({ navigation }) => {
       }
 
       const response = await axios.get(`${API_URL}/eletronicos`);
-      const userEletronicos = response.data.filter(item => item.uid === user.uid);
+
+      const userEletronicos = response.data
+        .filter(item => item.uid === user.uid)
+        .sort((a, b) => parseDate(b.criadoEm) - parseDate(a.criadoEm)); // mais recentes primeiro
+
       setEletronicos(userEletronicos);
       setError(null);
     } catch (err) {
@@ -34,9 +65,9 @@ const RelatorioScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    const interval = setInterval(fetchEletronicos, 5000); // Atualiza a cada 5s
-    fetchEletronicos(); // Chama imediatamente
-    
+    const interval = setInterval(fetchEletronicos, 5000); // Atualiza a cada 5 segundos
+    fetchEletronicos(); // Executa na primeira renderização
+
     return () => clearInterval(interval);
   }, []);
 
@@ -54,10 +85,7 @@ const RelatorioScreen = ({ navigation }) => {
       <View style={[general.container3, { justifyContent: 'center', alignItems: 'center' }]}>
         <Titulo text="Relatório de Eletrônicos" />
         <Text style={{ color: 'red', marginBottom: 20 }}>Erro: {error}</Text>
-        <BotaoPrimario 
-          text="Tentar novamente" 
-          onPress={fetchEletronicos} 
-        />
+        <BotaoPrimario text="Tentar novamente" onPress={fetchEletronicos} />
       </View>
     );
   }
