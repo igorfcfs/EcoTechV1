@@ -8,7 +8,6 @@ import { general } from '../styles/index';
 import { auth } from '../firebaseConfig';
 import axios from 'axios';
 import { API_URL } from '../api';
-import ProcurarLocalMaisProximo from '../functions/ProcurarLocalMaisProximo';
 import * as Location from 'expo-location';
 
 const HomeScreen = () => {
@@ -39,8 +38,18 @@ const HomeScreen = () => {
   // Busca local mais próximo do usuário
   const fetchLocalMaisProximo = async () => {
     try {
-      const id = await ProcurarLocalMaisProximo.getLocalDescarteMaisProximo();
-      setLocalId(id);
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+
+        const location = await Location.getCurrentPositionAsync({});
+        const userCoords = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+
+        const localInfo = await axios.get(`${API_URL}/locais/local_mais_proximo?lat=${userCoords.latitude}&lng=-${userCoords.longitude}`);
+        setLocalId(localInfo.data.id_local)
+        setNomeLocal(localInfo.data.nome_local);
     } catch (error) {
       console.error('Erro ao buscar local mais próximo:', error);
     }
@@ -57,28 +66,17 @@ const HomeScreen = () => {
 
         const resUser = await axios.get(`${API_URL}/relatorio/lixo-reciclado/${userId}/${localId}`);
         setQtdUserLixo(resUser.data.recycled_eletronics);
-
-        const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') {
-            Alert.alert('Permissão negada', 'É necessário permitir a localização para encontrar o local de descarte.');
-            return null;
-          }
-    
-          const location = await Location.getCurrentPositionAsync({});
-          const userCoords = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          };
-
-        const localName = await axios.get(`${API_URL}/locais/local_mais_proximo?lat=${userCoords.latitude}&lng=-${userCoords.longitude}`);
-        setNomeLocal(localName.data.nome_local);
       } catch (error) {
         console.error('Erro ao buscar dados do lixo reciclado:', error);
       }
     };
 
-    fetchDados();
+    fetchDados(); // primeira chamada
+    const interval = setInterval(fetchDados, 10000); // a cada 10 segundos
+
+    return () => clearInterval(interval); // limpa o intervalo ao desmontar
   }, [localId, userId]);
+
 
   // Atualiza pontos e eletrônicos a cada 60s
   useEffect(() => {
@@ -99,7 +97,7 @@ const HomeScreen = () => {
     };
 
     fetchAnalytics();
-    const interval = setInterval(fetchAnalytics, 60000); // Atualiza a cada 60s
+    const interval = setInterval(fetchAnalytics, 10000); // Atualiza a cada 10s
 
     return () => clearInterval(interval);
   }, []);
@@ -107,13 +105,18 @@ const HomeScreen = () => {
   return (
     <View style={general.container2}>
 
-      <Titulo text={`Dados da ${nomeLocal}`} />
+      {nomeLocal ?
+        <>
+          <Titulo text={`Dados da ${nomeLocal}`} />
 
-      <View style={general.cardsContainer}>
-        <Card descricao="Quantidade Total de Lixo Reciclado" quantidade={qtdLixo ?? 0} />
-        <Card descricao="Quantidade que Você Reciclou" quantidade={qtdUserLixo ?? 0} />
-      </View>
-
+          <View style={general.cardsContainer}>
+            <Card descricao="Quantidade Total de Lixo Reciclado" quantidade={qtdLixo ?? 0} />
+            <Card descricao="Quantidade que Você Reciclou" quantidade={qtdUserLixo ?? 0} />
+          </View>
+        </>
+        :
+        <Titulo text={"Carregando dados..."} />
+      }
 
       <Titulo text="Bem vindo ao EcoTrash" />
 
@@ -124,7 +127,7 @@ const HomeScreen = () => {
       
       <View style={{marginTop: 60, width: '100%'}}>
         <BotaoPrimario 
-          style={{ backgroundColor: 'lightgreen', borderRadius: 100 }} 
+          style={{borderRadius: 100 }} 
           text="Reciclar" 
           onPress={() => navigation.navigate('Reciclar')} 
         />

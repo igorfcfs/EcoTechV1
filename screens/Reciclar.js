@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, Button, ActivityIndicator, Alert, TouchableOpac
 import axios from 'axios';
 import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
-import ProcurarLocalMaisProximo from '../functions/ProcurarLocalMaisProximo';
-import { categorias, pontosPorCategoria } from '../functions/Data';
+import { categorias, pontosPorCategoria } from '../Data/Categorias';
+import * as Location from 'expo-location';
 
 export default function ReciclarScreen({ navigation }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
@@ -45,7 +45,20 @@ export default function ReciclarScreen({ navigation }) {
         return;
       }
 
-      const localDescarteId = await ProcurarLocalMaisProximo.getLocalDescarteMaisProximo();
+      const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permissão negada', 'É necessário permitir a localização para encontrar o local de descarte.');
+          return null;
+      }
+  
+      const location = await Location.getCurrentPositionAsync({});
+      const userCoords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      const localMaisProximo = await axios.get(`${API_URL}/locais/local_mais_proximo?lat=${userCoords.latitude}&lng=-${userCoords.longitude}`);
+      const localDescarteId = localMaisProximo.data.id_local;
       if (!localDescarteId) {
         Alert.alert('Erro', 'Não foi possível encontrar um local de descarte próximo.');
         setCarregando(false);
