@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Button, ActivityIndicator, Alert, TouchableOpac
 import axios from 'axios';
 import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
-import { categorias, pontosPorCategoria } from '../Data/Categorias';
+import { categorias, pontosPorCategoria } from '../data/Categorias';
 import * as Location from 'expo-location';
 
 export default function ReciclarScreen({ navigation }) {

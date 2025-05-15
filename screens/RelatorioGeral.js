@@ -33,7 +33,7 @@ const RelatorioScreen = () => {
   }
 
   useEffect(() => {
-    const interval = setInterval(fetchAnalytics, 60000); // Atualiza a cada 5s
+    const interval = setInterval(fetchAnalytics, 5000); // Atualiza a cada 5s
     fetchAnalytics(); // Chama imediatamente
     
     return () => clearInterval(interval);
@@ -83,7 +83,7 @@ const RelatorioScreen = () => {
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
       
-      {dadosCategoria ? (
+      {dadosCategoria !== 0 ? (
         <FlatList
           data={relatorio}
           keyExtractor={(item) => item.categoria}
@@ -100,7 +100,14 @@ const RelatorioScreen = () => {
           )}
         />
       ) : (
-        <Text>Carregando dados...</Text>
+        <View style={styles.card}>
+          <View style={styles.info}>
+            <Text style={styles.tipo}>Nenhum eletrônico reciclado ainda</Text>
+            <Text style={styles.marcaModelo}>
+              Quando você reciclar, os dados aparecerão aqui 😄
+            </Text>
+          </View>
+        </View>
       )}
 
     </View>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, FlatList, Text } from 'react-native';
+import { View, FlatList, Text, Alert } from 'react-native';
 import axios from 'axios';
 import EletronicoCard from '../components/EletronicoCard';
 import Titulo from '../components/Titulo';
@@ -13,30 +13,15 @@ const RelatorioScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função para converter timestamp para objeto Date
   const parseDate = (timestamp) => {
     if (!timestamp) return new Date(0);
-
-    if (typeof timestamp.toDate === 'function') {
-      return timestamp.toDate();
-    }
-
-    if (timestamp._seconds && timestamp._nanoseconds) {
-      return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
-    }
-
-    if (timestamp.seconds && timestamp.nanoseconds) {
-      return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-    }
-
-    if (typeof timestamp === 'string') {
-      return new Date(timestamp);
-    }
-
-    if (timestamp instanceof Date) {
-      return timestamp;
-    }
-
+    if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+    if (timestamp._seconds && timestamp._nanoseconds)
+      return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1e6);
+    if (timestamp.seconds && timestamp.nanoseconds)
+      return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1e6);
+    if (typeof timestamp === 'string') return new Date(timestamp);
+    if (timestamp instanceof Date) return timestamp;
     return new Date(0);
   };
 
@@ -48,13 +33,8 @@ const RelatorioScreen = ({ navigation }) => {
         return;
       }
 
-      const response = await axios.get(`${API_URL}/eletronicos`);
-
-      const userEletronicos = response.data
-        .filter(item => item.uid === user.uid)
-        .sort((a, b) => parseDate(b.criadoEm) - parseDate(a.criadoEm)); // mais recentes primeiro
-
-      setEletronicos(userEletronicos);
+      const response = await axios.get(`${API_URL}/eletronicos/usuario-soft/${user.uid}`);
+      setEletronicos(response.data);
       setError(null);
     } catch (err) {
       console.error('Erro ao buscar eletrônicos:', err);
@@ -64,10 +44,43 @@ const RelatorioScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(fetchEletronicos, 5000); // Atualiza a cada 5 segundos
-    fetchEletronicos(); // Executa na primeira renderização
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/eletronicos/soft-delete/${id}`);
+      fetchEletronicos();
+    } catch (err) {
+      console.error('Erro ao deletar eletrônico:', err);
+    }
+  };
 
+  const limparHistorico = async () => {
+    Alert.alert(
+      'Confirmar',
+      'Tem certeza que deseja limpar todo o histórico?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sim',
+          onPress: async () => {
+            try {
+              const user = auth.currentUser;
+              if (user) {
+                await axios.delete(`${API_URL}/eletronicos/soft-delete/limpar/${user.uid}`);
+                fetchEletronicos();
+              }
+            } catch (err) {
+              console.error('Erro ao limpar histórico:', err);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  useEffect(() => {
+    const interval = setInterval(fetchEletronicos, 5000);
+    fetchEletronicos();
     return () => clearInterval(interval);
   }, []);
 
@@ -97,12 +110,17 @@ const RelatorioScreen = ({ navigation }) => {
       {eletronicos.length === 0 ? (
         <EletronicoCard vazio />
       ) : (
-        <FlatList
-          data={eletronicos}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <EletronicoCard item={item} />}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        <>
+          <FlatList
+            data={eletronicos}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <EletronicoCard item={item} onDelete={handleDelete} />
+            )}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+          <BotaoPrimario text="Limpar Histórico" onPress={limparHistorico} />
+        </>
       )}
 
       <BotaoPrimario text="+" onPress={() => navigation.navigate('Reciclar')} />
