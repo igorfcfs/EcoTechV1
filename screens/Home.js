@@ -124,14 +124,6 @@ const HomeScreen = () => {
         <Card descricao="Pontos Acumulados" quantidade={pontosAcumulados} />
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
-      
-      <View style={{marginTop: 60, width: '100%'}}>
-        <BotaoPrimario 
-          style={{borderRadius: 100 }} 
-          text="Reciclar" 
-          onPress={() => navigation.navigate('Reciclar')} 
-        />
-      </View>
     </View>
   );
 };

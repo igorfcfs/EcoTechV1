@@ -1,5 +1,20 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator, Alert, TouchableOpacity, Image, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 import axios from 'axios';
 import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
@@ -12,10 +27,9 @@ export default function ReciclarScreen({ navigation }) {
   const [carregando, setCarregando] = useState(false);
 
   const verificarLixeira = async () => {
-    // Simula resposta da ESP32
     return new Promise(resolve => {
       setTimeout(() => {
-        const validado = true; // Altere para false para simular erro
+        const validado = true; // Simula sucesso
         resolve(validado);
       }, 1500);
     });
@@ -46,11 +60,11 @@ export default function ReciclarScreen({ navigation }) {
       }
 
       const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permissão negada', 'É necessário permitir a localização para encontrar o local de descarte.');
-          return null;
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'É necessário permitir a localização.');
+        return;
       }
-  
+
       const location = await Location.getCurrentPositionAsync({});
       const userCoords = {
         latitude: location.coords.latitude,
@@ -66,7 +80,7 @@ export default function ReciclarScreen({ navigation }) {
       }
 
       const pontos = pontosPorCategoria[categoriaSelecionada] * qtd;
-      
+
       const dados = {
         uid: user.uid,
         categoria: categoriaSelecionada,
@@ -76,7 +90,7 @@ export default function ReciclarScreen({ navigation }) {
       };
 
       const response = await axios.post(`${API_URL}/eletronicos`, dados);
-      
+
       if (response.status === 200 || response.status === 201) {
         Alert.alert('Sucesso', 'Reciclagem registrada com sucesso!');
         navigation.goBack();
@@ -90,50 +104,58 @@ export default function ReciclarScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.titulo}>Selecione a Categoria</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+          <Text style={styles.titulo}>Selecione a Categoria</Text>
 
-      <View style={styles.grid}>
-        {categorias.map((item) => (
-          <TouchableOpacity
-            key={item.nome}
-            style={[
-              styles.card,
-              categoriaSelecionada === item.nome && styles.cardSelecionado
-            ]}
-            onPress={() => setCategoriaSelecionada(item.nome)}
-          >
-            <Image source={item.imagem} style={styles.imagem} />
-            <Text style={styles.nomeCategoria}>{item.nome}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+          <View style={styles.grid}>
+            {categorias.map((item) => (
+              <TouchableOpacity
+                key={item.nome}
+                style={[
+                  styles.card,
+                  categoriaSelecionada === item.nome && styles.cardSelecionado
+                ]}
+                onPress={() => setCategoriaSelecionada(item.nome)}
+              >
+                <Image source={item.imagem} style={styles.imagem} />
+                <Text style={styles.nomeCategoria}>{item.nome}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-      {categoriaSelecionada && (
-        <>
-          <Text style={styles.label}>Informe a quantidade:</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Ex: 3"
-            value={quantidade}
-            onChangeText={setQuantidade}
-          />
+          {categoriaSelecionada && (
+            <>
+              <Text style={styles.label}>Informe a quantidade:</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                placeholder="Ex: 3"
+                value={quantidade}
+                onChangeText={setQuantidade}
+              />
 
-          {carregando ? (
-            <ActivityIndicator size="large" color="#1B5E20" style={{ marginTop: 20 }} />
-          ) : (
-            <Button title="Confirmar Reciclagem" onPress={handleConfirmar} color="#1B5E20" />
+              {carregando ? (
+                <ActivityIndicator size="large" color="#1B5E20" style={{ marginTop: 20 }} />
+              ) : (
+                <Button title="Confirmar Reciclagem" onPress={handleConfirmar} color="#1B5E20" />
+              )}
+            </>
           )}
-        </>
-      )}
-    </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#E8F5E9',
     padding: 20,
   },

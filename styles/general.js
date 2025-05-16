@@ -5,6 +5,10 @@ import colors from './colors';
 import fonts from './fonts';
 
 const general = {
+  tabBar: {
+    flex: 1,
+    paddingTop: 30,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
