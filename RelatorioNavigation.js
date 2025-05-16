@@ -1,8 +1,9 @@
 import RelatorioGeralScreen from './screens/RelatorioGeral';
 import RelatorioEletronicosScreen from './screens/RelatorioEletronicos';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; //CRIA TODA A ESTRUTURA DO MENU
 
-const Tab = createBottomTabNavigator();
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+const Tab = createMaterialTopTabNavigator();
 
 export default function RelatorioNavigation() {
   return (

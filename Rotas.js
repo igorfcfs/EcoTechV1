@@ -2,7 +2,7 @@ import HomeScreen from './screens/Home';
 import RelatorioNavigation from './RelatorioNavigation'
 import LocalNavigation from './LocalNavigation';
 import PerfilScreen from './screens/Perfil';
-import { createDrawerNavigator } from '@react-navigation/drawer'; //CRIA TODA A ESTRUTURA DO MENU
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; //CRIA TODA A ESTRUTURA DO MENU
 
 /*NAVEGAÇÃO - O APP.JS SE TORNA O MENU
 - DEPENDÊNCIAS:
@@ -16,17 +16,17 @@ import { createDrawerNavigator } from '@react-navigation/drawer'; //CRIA TODA A 
 - POR ABAS (BOTTOM TABS/MATERIAL TOP TABS NAVIGATION) - por meio de abas inferiores/superiores
 */
 
-const Drawer = createDrawerNavigator();
+const Tab = createBottomTabNavigator();
 
 {/*COMPONENTE QUE CONSTRÓI O MENU*/}
 export default function Rotas() {
   return (
-    <Drawer.Navigator> 
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Relatório" component={RelatorioNavigation} />
-      <Drawer.Screen name="Locais" component={LocalNavigation} />
-      <Drawer.Screen name="Perfil" component={PerfilScreen} />
-    </Drawer.Navigator>
+    <Tab.Navigator> 
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Relatório" component={RelatorioNavigation} />
+      <Tab.Screen name="Locais" component={LocalNavigation} />
+      <Tab.Screen name="Perfil" component={PerfilScreen} />
+    </Tab.Navigator>
   );
 }
 

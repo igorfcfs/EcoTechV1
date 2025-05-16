@@ -1,8 +1,8 @@
 import MapaScreen from './screens/Mapa';
 import EcopontosScreen from './screens/Ecopontos';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; //CRIA TODA A ESTRUTURA DO MENU
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 
 export default function RelatorioNavigation() {
   return (
