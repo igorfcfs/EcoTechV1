@@ -1,14 +1,16 @@
 import React, { useState, useEffect, use } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BotaoPrimario from '../components/BotaoPrimario';
 import Titulo from '../components/Titulo';
 import Card from '../components/CardEcoTrashs';
 import { general } from '../styles/index';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
+import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import axios from 'axios';
 import { API_URL } from '../api';
 import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -20,6 +22,7 @@ const HomeScreen = () => {
   const [qtdLixo, setQtdLixo] = useState(null);
   const [qtdUserLixo, setQtdUserLixo] = useState(null);
   const [nomeLocal, setNomeLocal] = useState(null);
+  const [nome, setNome] = useState(null);
 
   // Busca dados do usuário logado
   useEffect(() => {
@@ -29,6 +32,22 @@ const HomeScreen = () => {
         fetchLocalMaisProximo(); // Busca o local mais próximo
       } else {
         console.warn("Usuário não está logado");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userRef = doc(db, 'users', user.uid);
+
+    const unsubscribe = onSnapshot(userRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        setNome(data.nome || 'Usuário');
       }
     });
 
@@ -103,30 +122,59 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <View style={general.container2}>
+    <>
+      <LinearGradient
+        colors={['#555934', '#B6BF6F']}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.header}
+      >
+        <Text style={{fontSize: 30, color: 'white', fontWeight: 'bold', textAlign: 'center'}}>Bem vindo, {nome}</Text>
+        <Text style={styles.subtitle}>Vamos reciclar juntos.</Text>
+      </LinearGradient>
+      <View style={general.container2}>
 
-      {nomeLocal ?
-        <>
-          <Titulo text={`Dados da ${nomeLocal}`} />
+        <Titulo text="Minha Jornada" />
 
-          <View style={general.cardsContainer}>
-            <Card descricao="Quantidade Total de Lixo Reciclado" quantidade={qtdLixo ?? 0} />
-            <Card descricao="Quantidade que Você Reciclou" quantidade={qtdUserLixo ?? 0} />
-          </View>
-        </>
-        :
-        <Titulo text={"Carregando dados..."} />
-      }
+        <View style={general.cardsContainer}>
+          <Card descricao="Pontos Acumulados" quantidade={pontosAcumulados} />
+          <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
+        </View>
 
-      <Titulo text="Bem vindo ao EcoTrash" />
+        {nomeLocal ?
+          <>
+            <Titulo text={`Você está próximo da ${nomeLocal}`} />
 
-      <View style={general.cardsContainer}>
-        <Card descricao="Pontos Acumulados" quantidade={pontosAcumulados} />
-        <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
+            <View style={general.cardsContainer}>
+              <Card descricao="Quantidade Total de Lixo Reciclado" quantidade={qtdLixo ?? 0} />
+              <Card descricao="Quantidade que Você Reciclou" quantidade={qtdUserLixo ?? 0} />
+            </View>
+          </>
+          :
+          <Titulo text={"Carregando dados..."} />
+        }
       </View>
-    </View>
+    </>
   );
 };
 
 export default HomeScreen;
 
+const styles = StyleSheet.create({
+  header: {
+    padding: 50,
+    borderRadius: 16,
+    marginBottom: 20,
+    marginTop: 30
+  },
+  welcomeText: {
+    fontSize: 22,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#F0F0F0',
+    marginTop: 6,
+  },
+});
