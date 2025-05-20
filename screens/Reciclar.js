@@ -134,18 +134,18 @@ export default function ReciclarScreen({ navigation }) {
     return (
       <View style={[general.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Titulo text="Por favor, aguarde" />
-        <Text style={{ marginTop: 20, fontSize: 18 }}>Aguarde enquanto a lixeira está processando o eletrônico...</Text>
+        <Text style={{ marginTop: 20, fontSize: 18, margin: 10 }}>Aguarde enquanto a lixeira está processando o eletrônico...</Text>
         <View style={styles.spinnerContainer}>
           <ActivityIndicator size={80} color={colors.secundario} />
         </View>
-        <Text style={{ marginTop: 20, fontSize: 18 }}>Você será recompensado de acordo com a reciclagem!</Text>
+        <Text style={{ margin: 10, fontSize: 18 }}>Você será recompensado de acordo com a reciclagem!</Text>
       </View>
     );
   }
 
   if (etapa === 'sucesso') {
     return (
-      <View style={[general.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[general.container, { justifyContent: 'space-between', alignItems: 'center' }]}>
         <Titulo text="Sucesso!" />
         <Text style={{ marginTop: 20, fontSize: 18 }}>Seu eletrônico foi reciclado com sucesso</Text>
         <Image
@@ -166,10 +166,10 @@ export default function ReciclarScreen({ navigation }) {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={general.container} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={general.container3} keyboardShouldPersistTaps="handled">
           <Titulo text="Formulário de reciclagem" />
-          <Text>Preencha o formulário abaixo para utilizar a lixeira inteligente e realizar a reciclagem do eletrônico desejado.</Text>
-          <Text>Selecione a Categoria</Text>
+          <Text style={general.text}>Preencha o formulário abaixo para utilizar a lixeira inteligente e realizar a reciclagem do eletrônico desejado.</Text>
+          <Text style={general.subtitle}>Selecione a Categoria</Text>
           <View style={styles.grid}>
             {categorias.map((item) => (
               <TouchableOpacity
@@ -188,11 +188,10 @@ export default function ReciclarScreen({ navigation }) {
 
           {categoriaSelecionada && (
             <>
-              <Text style={general.textInputs.label}>Informe a quantidade:</Text>
               <TextInput
                 style={general.textInputs.input}
                 keyboardType="numeric"
-                placeholder="Ex: 3"
+                placeholder="Informe a quantidade - Ex: 3"
                 value={quantidade}
                 onChangeText={setQuantidade}
               />
@@ -219,9 +218,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   spinnerContainer: {
-    marginTop: 30,
+    margin: 30,
     alignSelf: 'center',
-    transform: [{ scale: 1.5 }], // aumenta a espessura visual do spinner
+    transform: [{ scale: 1 }], // aumenta a espessura visual do spinner
   },
   container: {
     flexGrow: 1,

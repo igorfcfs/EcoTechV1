@@ -72,6 +72,21 @@ const general = {
     textAlign: 'center',
     color: colors.primario,
   },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    marginTop: 20,
+    textAlign: 'center',
+    color: colors.secundario,
+  },
+  text: {
+    fontSize: 15,
+    fontWeight: 'medium',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: colors.terciario
+  },
   cards: {
     container: {
       flexDirection: 'row',

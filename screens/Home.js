@@ -129,8 +129,8 @@ const HomeScreen = () => {
         end={{ x: 0, y: 1 }}
         style={styles.header}
       >
-        <View style={{flexDirection: 'row'}}>
-          <View>
+        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+          <View style={{justifyContent: 'center', marginRight: 10, marginLeft: 10}}>
             <Text style={{fontSize: 30, color: 'white', fontWeight: 'bold', textAlign: 'center'}}>Bem vindo, {nome}</Text>
             <Text style={styles.subtitle}>Vamos reciclar juntos.</Text>
           </View>
@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 18,
     color: '#F0F0F0',
-    marginTop: 6,
+    marginTop: 10,
   },
 });
