@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
   ActivityIndicator,
   Alert,
   TouchableOpacity,
@@ -20,6 +19,8 @@ import { API_URL } from '../api';
 import { auth } from '../firebaseConfig';
 import { categorias, pontosPorCategoria } from '../data/Categorias';
 import * as Location from 'expo-location';
+import { colors, general } from '../styles';
+import BotaoPrimario from '../components/BotaoPrimario';
 
 export default function ReciclarScreen({ navigation }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
@@ -110,8 +111,8 @@ export default function ReciclarScreen({ navigation }) {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <Text style={styles.titulo}>Selecione a Categoria</Text>
+        <ScrollView contentContainerStyle={general.container} keyboardShouldPersistTaps="handled">
+          <Text style={general.title}>Selecione a Categoria</Text>
 
           <View style={styles.grid}>
             {categorias.map((item) => (
@@ -119,7 +120,7 @@ export default function ReciclarScreen({ navigation }) {
                 key={item.nome}
                 style={[
                   styles.card,
-                  categoriaSelecionada === item.nome && styles.cardSelecionado
+                  categoriaSelecionada === item.nome && general.cards.selected
                 ]}
                 onPress={() => setCategoriaSelecionada(item.nome)}
               >
@@ -131,9 +132,9 @@ export default function ReciclarScreen({ navigation }) {
 
           {categoriaSelecionada && (
             <>
-              <Text style={styles.label}>Informe a quantidade:</Text>
+              <Text style={general.textInputs.label}>Informe a quantidade:</Text>
               <TextInput
-                style={styles.input}
+                style={general.textInputs.input}
                 keyboardType="numeric"
                 placeholder="Ex: 3"
                 value={quantidade}
@@ -141,9 +142,9 @@ export default function ReciclarScreen({ navigation }) {
               />
 
               {carregando ? (
-                <ActivityIndicator size="large" color="#1B5E20" style={{ marginTop: 20 }} />
+                <ActivityIndicator size="large" color={colors.secundario} style={{ marginTop: 20 }} />
               ) : (
-                <Button title="Confirmar Reciclagem" onPress={handleConfirmar} color="#1B5E20" />
+                <BotaoPrimario text="Confirmar Reciclagem" onPress={handleConfirmar} />
               )}
             </>
           )}
@@ -179,10 +180,6 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
     elevation: 3,
-  },
-  cardSelecionado: {
-    borderWidth: 2,
-    borderColor: '#2E7D32',
   },
   imagem: {
     width: 60,

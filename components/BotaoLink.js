@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { colors } from '../styles';
 
 export default function PrimaryButton({ text, onPress }) {
     return (
@@ -14,7 +15,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     botaoLinkTexto: {
-        color: 'green',
+        color: colors.secundario,
         fontSize: 14,
         textDecorationLine: 'underline',
     },

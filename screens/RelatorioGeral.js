@@ -75,10 +75,10 @@ const RelatorioScreen = () => {
   const relatorio = relatorioCompleto.filter(item => item.quantidade > 0);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Relatório de Reciclagem</Text>
+    <View style={general.container3}>
+      <Text style={general.title}>Relatório de Reciclagem</Text>
 
-      <View style={general.cardsContainer}>
+      <View style={general.cards.container}>
         <Card descricao="Pontos Acumulados" quantidade={pontos} />
         <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
       </View>
@@ -88,10 +88,10 @@ const RelatorioScreen = () => {
           data={relatorio}
           keyExtractor={(item) => item.categoria}
           renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{item.categoria}</Text>
-              <Text style={styles.cardValue}>{item.quantidade}</Text>
-              <Text style={styles.percentage}>
+            <View style={general.cards.containerColumn}>
+              <Text style={general.cards.cardTitle}>{item.categoria}</Text>
+              <Text style={general.cards.cardValue}>{item.quantidade}</Text>
+              <Text style={general.cards.percentage}>
                 {typeof item.porcentagem === 'number' 
                   ? `${Number(item.porcentagem.toFixed(2))}% do total` 
                   : item.porcentagem}
@@ -116,51 +116,3 @@ const RelatorioScreen = () => {
 
 export default RelatorioScreen;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E8F5E9',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#1B5E20',
-  },
-  cardTotal: {
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 20,
-    elevation: 3, // Sombras no Android
-    shadowColor: '#000', // Sombras no iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  card: {
-    backgroundColor: '#FFF',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#388E3C',
-  },
-  cardValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1B5E20',
-    marginVertical: 5,
-  },
-  percentage: {
-    fontSize: 14,
-    color: '#666',
-  },
-});

@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet} from 'react-native';
-import { metrics } from '../styles';
+import { colors, metrics } from '../styles';
 
 export default function CardEcoTrash({ descricao, quantidade }) {
     return (
@@ -27,11 +27,11 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 16,
         marginBottom: 10,
-        color: '#388E3C'
+        color: colors.primario
     },
     cardValue: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#1B5E20'
+        color: colors.primario
     },
 })

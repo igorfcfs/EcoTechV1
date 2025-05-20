@@ -15,7 +15,7 @@ import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import BotaoPrimario from '../components/BotaoPrimario';
 import Input from '../components/Input';
-import { general } from '../styles/index';
+import { colors, general } from '../styles/index';
 
 export default function Perfil({ navigation }) {
   const [imageUri, setImageUri] = useState(null);
@@ -156,12 +156,12 @@ export default function Perfil({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.userName}>{nome}</Text>
+      <Text style={general.title}>{nome}</Text>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>Email</Text>
+      <View style={general.textInputs.infoContainer}>
+        <Text style={general.textInputs.label}>Email</Text>
         <Input value={email} onChangeText={setEmail} editable={false} />
-        <Text style={styles.label}>Telefone</Text>
+        <Text style={general.textInputs.label}>Telefone</Text>
         <Input value={endereco} onChangeText={setEndereco} editable={false} />
       </View>
 
@@ -171,12 +171,6 @@ export default function Perfil({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
   settingsIcon: {
     color: '#4CAF50',
     fontSize: 26,
@@ -190,34 +184,16 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 3,
-    borderColor: '#4CAF50',
+    borderColor: colors.primario,
   },
   editIcon: {
     position: 'absolute',
     bottom: 5,
     right: 5,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.secundario,
     borderRadius: 15,
     padding: 5,
     borderWidth: 2,
-    borderColor: '#fff',
-  },
-  userName: {
-    color: '#1B5E20',
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  infoContainer: {
-    width: '90%',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  label: {
-    color: '#1B5E20',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    borderColor: colors.primario,
   },
 });

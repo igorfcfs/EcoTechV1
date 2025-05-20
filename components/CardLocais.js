@@ -2,6 +2,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../api';
+import { colors } from '../styles';
 
 const CardLocais = ({ imageUri, localId, nome, endereco, userId }) => {
   const [qtdLixo, setQtdLixo] = useState(null); // total do local
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     gap: 20, // use isso no lugar do marginRight
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'green'
+    borderColor: colors.primario
   },
 
   image: {
@@ -70,22 +71,22 @@ const styles = StyleSheet.create({
   nome: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: "green"
+    color: colors.primario
   },
   endereco: {
     fontSize: 16,
-    color: 'green',
+    color: colors.secundario,
     marginVertical: 4,
   },
   lixoReciclado: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: "green"
+    color: colors.primario
   },
   lixoRecicladoUsuario: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: "green"
+    color: colors.primario
   }
 });
 

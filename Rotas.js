@@ -9,6 +9,7 @@ import RelatorioNavigation from './RelatorioNavigation';
 import LocalNavigation from './LocalNavigation';
 import PerfilScreen from './screens/Perfil';
 import ReciclarScreen from './screens/Reciclar';
+import { colors } from './styles';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,8 +30,10 @@ export default function Rotas() {
         tabBarStyle: {
           height: 70,
           paddingBottom: 10,
-          paddingTop: 10,
+          paddingTop: 10
         },
+        tabBarActiveTintColor: colors.primario, // <- Aqui define a cor do texto ativo
+        tabBarInactiveTintColor: 'gray', // <- E aqui define a cor do texto inativo
         tabBarHideOnKeyboard: true,
       }}
     >
@@ -39,7 +42,7 @@ export default function Rotas() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="home-outline" size={24} color={focused ? '#8BC34A' : 'gray'} />
+            <Ionicons name="home-outline" size={24} color={focused ? colors.secundario : 'gray'} />
           ),
         }}
       />
@@ -48,7 +51,7 @@ export default function Rotas() {
         component={RelatorioNavigation}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="clipboard-outline" size={24} color={focused ? '#8BC34A' : 'gray'} />
+            <Ionicons name="clipboard-outline" size={24} color={focused ? colors.secundario : 'gray'} />
           ),
         }}
       />
@@ -72,7 +75,7 @@ export default function Rotas() {
         component={LocalNavigation}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="map-outline" size={24} color={focused ? '#8BC34A' : 'gray'} />
+            <Ionicons name="map-outline" size={24} color={focused ? colors.secundario : 'gray'} />
           ),
         }}
       />
@@ -81,7 +84,7 @@ export default function Rotas() {
         component={PerfilScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="person-outline" size={24} color={focused ? '#8BC34A' : 'gray'} />
+            <Ionicons name="person-outline" size={24} color={focused ? colors.secundario : 'gray'} />
           ),
         }}
       />

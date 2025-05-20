@@ -13,7 +13,7 @@ export default function PrimaryButton({ text, onPress, style }) {
 const styles = StyleSheet.create({
     button: {
         width: '100%',
-        backgroundColor: colors.background2,
+        backgroundColor: colors.primario,
         paddingVertical: 15,
         paddingHorizontal: 20,
         borderRadius: 10,

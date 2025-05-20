@@ -69,8 +69,8 @@ export default function Cadastro({ navigation }) {
     <SafeAreaView style={general.container}>
       {/* Logotipo */}
       <Image
-        source={require('../assets/icon.png')}
-        style={styles.logo}
+        source={require('../assets/logo.png')}
+        style={general.logo}
         resizeMode="contain"
       />
 
@@ -100,14 +100,6 @@ export default function Cadastro({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  logo: {
-    alignSelf: "center",
-    borderRadius: 100,
-    padding: 10,
-    marginBottom: 20,
-    width: 300,
-    height: 200,
-  },
   form: {
     marginBottom: 20,
     width: '100%'

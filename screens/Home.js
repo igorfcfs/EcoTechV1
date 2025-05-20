@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import BotaoPrimario from '../components/BotaoPrimario';
 import Titulo from '../components/Titulo';
 import Card from '../components/CardEcoTrashs';
-import { general } from '../styles/index';
+import { colors, general } from '../styles/index';
 import { auth, db } from '../firebaseConfig';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import axios from 'axios';
@@ -124,7 +124,7 @@ const HomeScreen = () => {
   return (
     <>
       <LinearGradient
-        colors={['#555934', '#B6BF6F']}
+        colors={[colors.primario, colors.secundario]}
         start={{ x: 1, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.header}
@@ -136,7 +136,7 @@ const HomeScreen = () => {
 
         <Titulo text="Minha Jornada" />
 
-        <View style={general.cardsContainer}>
+        <View style={general.cards.container}>
           <Card descricao="Pontos Acumulados" quantidade={pontosAcumulados} />
           <Card descricao="Eletrônicos Reciclados" quantidade={recycledEletronics} />
         </View>
@@ -145,7 +145,7 @@ const HomeScreen = () => {
           <>
             <Titulo text={`Você está próximo da ${nomeLocal}`} />
 
-            <View style={general.cardsContainer}>
+            <View style={general.cards.container}>
               <Card descricao="Quantidade Total de Lixo Reciclado" quantidade={qtdLixo ?? 0} />
               <Card descricao="Quantidade que Você Reciclou" quantidade={qtdUserLixo ?? 0} />
             </View>
@@ -165,7 +165,8 @@ const styles = StyleSheet.create({
     padding: 50,
     borderRadius: 16,
     marginBottom: 20,
-    marginTop: 30
+    marginTop: 30,
+    backgroundColor: colors.background
   },
   welcomeText: {
     fontSize: 22,

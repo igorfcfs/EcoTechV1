@@ -2,14 +2,10 @@
 
 const cores = {
   primario: '#54592F', //verdeModerno
-  secundario: '54592F', //verde
+  secundario: '#B6BF6F', //verdeClaro
+  terciario: '#1A1A1A', //preto
   
   background: '#F2F2F0', //cor de fundo
-  background2: '#388E3C', //fundo botao
-
-  text: '',
-  placeholder: '',
-  title: '#54592F'
 };
 
 export default cores;

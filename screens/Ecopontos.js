@@ -6,6 +6,7 @@ import { API_URL } from '../api';
 import CardLocais from '../components/CardLocais';
 import BotaoPrimario from '../components/BotaoPrimario';
 import { auth } from '../firebaseConfig';
+import { general } from '../styles';
 
 export default function Ecopontos() {
   const [userId, setUserId] = useState(null);
@@ -61,7 +62,7 @@ export default function Ecopontos() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Ecopontos próximos</Text>
+      <Text style={general.title}>Ecopontos próximos</Text>
       {locais.map(local => (
         <View key={local.id} style={styles.cardContainer}>
           <CardLocais
@@ -98,11 +99,5 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     marginBottom: 24,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: 'green',
   },
 });

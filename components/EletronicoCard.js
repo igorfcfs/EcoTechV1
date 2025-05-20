@@ -3,6 +3,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Ícone do "X"
+import { colors } from '../styles/index'
 
 export default function EletronicoCard({ item, vazio, onDelete }) {
   const [nomeLocal, setNomeLocal] = useState('Buscando...');
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   tipo: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1B5E20',
+    color: colors.primario,
   },
   marcaModelo: {
     fontSize: 14,

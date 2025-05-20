@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, Image } from 'react-native';
 import { auth, db } from '../firebaseConfig'; // Importando Firebase Authentication
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -64,6 +64,12 @@ export default function Login({ navigation }) {
 
   return (
     <View style={general.container2}>
+      <Image
+        source={require('../assets/logo.png')}
+        style={general.logo}
+        resizeMode="contain"
+      />
+
       <Titulo text="Login" />
 
       {/* Campos */}
