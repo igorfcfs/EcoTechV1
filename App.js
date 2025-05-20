@@ -8,6 +8,7 @@ import Cadastro from './screens/Cadastro';
 import Rotas from './Rotas';
 import { onAuthStateChanged } from 'firebase/auth';
 import ReciclarScreen from "./screens/Reciclar";
+import { colors } from "./styles";
 
 const Stack = createStackNavigator();
 
@@ -44,7 +45,18 @@ const App = () => {
         user ? (
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name='Rotas' component={Rotas} />
-            <Stack.Screen name='Reciclar' component={ReciclarScreen} options={{ headerShown: true }} />
+            <Stack.Screen name='Reciclar' component={ReciclarScreen} options={{
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: colors.secundario, // <- cor de fundo do header
+                alignSelf: 'center'
+              },
+              headerTintColor: '#fff', // <- cor do texto e ícones do header
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+              title: 'Formulário', // <- título da tela no header
+            }} />
           </Stack.Navigator>
         ) : (
           <Stack.Navigator screenOptions={{ headerShown: false }}>

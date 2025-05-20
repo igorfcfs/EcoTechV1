@@ -1,5 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import BotaoPrimario from '../components/BotaoPrimario';
 import Titulo from '../components/Titulo';
@@ -129,8 +129,17 @@ const HomeScreen = () => {
         end={{ x: 0, y: 1 }}
         style={styles.header}
       >
-        <Text style={{fontSize: 30, color: 'white', fontWeight: 'bold', textAlign: 'center'}}>Bem vindo, {nome}</Text>
-        <Text style={styles.subtitle}>Vamos reciclar juntos.</Text>
+        <View style={{flexDirection: 'row'}}>
+          <View>
+            <Text style={{fontSize: 30, color: 'white', fontWeight: 'bold', textAlign: 'center'}}>Bem vindo, {nome}</Text>
+            <Text style={styles.subtitle}>Vamos reciclar juntos.</Text>
+          </View>
+          <Image
+            source={require('../assets/flor.png')}
+            style={{ width: 100, height: 100, marginTop: 10 }}
+            resizeMode="cover"
+          />
+        </View>
       </LinearGradient>
       <View style={general.container2}>
 

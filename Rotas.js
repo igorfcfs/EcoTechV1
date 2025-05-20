@@ -1,25 +1,15 @@
-import React from 'react';
-import { Image, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from './screens/Home';
 import RelatorioNavigation from './RelatorioNavigation';
 import LocalNavigation from './LocalNavigation';
 import PerfilScreen from './screens/Perfil';
-import ReciclarScreen from './screens/Reciclar';
 import { colors } from './styles';
+import CustomReciclarButton from './components/CustomReciclarButton';
 
 const Tab = createBottomTabNavigator();
-
-const CustomReciclarButton = ({ children, onPress }) => (
-  <TouchableOpacity style={styles.reciclarButtonContainer} onPress={onPress}>
-    <View style={styles.reciclarButton}>
-      {children}
-    </View>
-  </TouchableOpacity>
-);
 
 export default function Rotas() {
   return (
@@ -56,18 +46,12 @@ export default function Rotas() {
         }}
       />
       <Tab.Screen
-        name="Reciclar"
-        component={ReciclarScreen}
+        name="ReciclarButton"
+        component={View} // Pode usar View ou um componente vazio
         options={{
           tabBarLabel: '',
-          tabBarIcon: () => (
-            <Image
-              source={require('./assets/icone-lixeira-central.png')} // substitua pelo nome correto se necessário
-              resizeMode="cover"
-              style={{ width: 90, height: 85, marginTop: 20 }}
-            />
-          ),
-          tabBarButton: (props) => <CustomReciclarButton {...props} />,
+          tabBarIcon: () => null,
+          tabBarButton: () => <CustomReciclarButton />, // 👈 Botão customizado
         }}
       />
       <Tab.Screen
@@ -92,29 +76,3 @@ export default function Rotas() {
   );
 }
 
-const styles = StyleSheet.create({
-  reciclarButtonContainer: {
-    top: -20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  reciclarButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#5D6A50',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 10 },
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  reciclarIcon: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 35, // Garante arredondamento da imagem também
-    resizeMode: 'cover',
-  },
-});

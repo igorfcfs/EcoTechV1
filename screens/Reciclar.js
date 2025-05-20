@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -21,11 +21,14 @@ import { categorias, pontosPorCategoria } from '../data/Categorias';
 import * as Location from 'expo-location';
 import { colors, general } from '../styles';
 import BotaoPrimario from '../components/BotaoPrimario';
+import Titulo from '../components/Titulo';
 
 export default function ReciclarScreen({ navigation }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
   const [quantidade, setQuantidade] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [etapa, setEtapa] = useState('form'); // 'form' | 'carregando' | 'sucesso'
+  const [eCoins, setECoins] = useState(0);
 
   const verificarLixeira = async () => {
     return new Promise(resolve => {
@@ -35,6 +38,19 @@ export default function ReciclarScreen({ navigation }) {
       }, 1500);
     });
   };
+
+  useLayoutEffect(() => {
+    let titulo = 'Formulário';
+    if (etapa === 'carregando') {
+      titulo = 'Validando';
+    } else if (etapa === 'sucesso') {
+      titulo = 'Parabéns';
+    }
+
+    navigation.setOptions({
+      title: titulo,
+    });
+  }, [etapa, navigation]);
 
   const handleConfirmar = async () => {
     const qtd = parseInt(quantidade);
@@ -50,6 +66,7 @@ export default function ReciclarScreen({ navigation }) {
     }
 
     setCarregando(true);
+    setEtapa('carregando');
 
     try {
       const validado = await verificarLixeira();
@@ -57,12 +74,15 @@ export default function ReciclarScreen({ navigation }) {
       if (!validado) {
         Alert.alert('Lixeira vazia', 'Nenhum item foi detectado na lixeira.');
         setCarregando(false);
+        setEtapa('form');
         return;
       }
 
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permissão negada', 'É necessário permitir a localização.');
+        setEtapa('form');
+        setCarregando(false);
         return;
       }
 
@@ -77,10 +97,12 @@ export default function ReciclarScreen({ navigation }) {
       if (!localDescarteId) {
         Alert.alert('Erro', 'Não foi possível encontrar um local de descarte próximo.');
         setCarregando(false);
+        setEtapa('form');
         return;
       }
 
       const pontos = pontosPorCategoria[categoriaSelecionada] * qtd;
+      setECoins(pontos);
 
       const dados = {
         uid: user.uid,
@@ -93,16 +115,49 @@ export default function ReciclarScreen({ navigation }) {
       const response = await axios.post(`${API_URL}/eletronicos`, dados);
 
       if (response.status === 200 || response.status === 201) {
-        Alert.alert('Sucesso', 'Reciclagem registrada com sucesso!');
-        navigation.goBack();
+        // Simula sucesso com tela de carregamento por 5s antes da de sucesso
+        setTimeout(() => {
+          setEtapa('sucesso');
+          setCarregando(false);
+        }, 5000);
       }
     } catch (error) {
       console.error('Erro ao registrar eletrônico:', error.response?.data || error.message);
       Alert.alert('Erro', 'Ocorreu um problema ao registrar o eletrônico.');
+      setEtapa('form');
     } finally {
       setCarregando(false);
     }
   };
+
+  if (etapa === 'carregando') {
+    return (
+      <View style={[general.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Titulo text="Por favor, aguarde" />
+        <Text style={{ marginTop: 20, fontSize: 18 }}>Aguarde enquanto a lixeira está processando o eletrônico...</Text>
+        <View style={styles.spinnerContainer}>
+          <ActivityIndicator size={80} color={colors.secundario} />
+        </View>
+        <Text style={{ marginTop: 20, fontSize: 18 }}>Você será recompensado de acordo com a reciclagem!</Text>
+      </View>
+    );
+  }
+
+  if (etapa === 'sucesso') {
+    return (
+      <View style={[general.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Titulo text="Sucesso!" />
+        <Text style={{ marginTop: 20, fontSize: 18 }}>Seu eletrônico foi reciclado com sucesso</Text>
+        <Image
+          source={require('../assets/sucesso.png')}
+          style={{ width: 200, height: 200, marginTop: 10 }}
+          resizeMode="cover"
+        />
+        <Text style={{ marginTop: 20, fontSize: 18 }}>Você ganhou + {eCoins} E-Coins</Text>
+        <BotaoPrimario text="Voltar" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -112,8 +167,9 @@ export default function ReciclarScreen({ navigation }) {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={general.container} keyboardShouldPersistTaps="handled">
-          <Text style={general.title}>Selecione a Categoria</Text>
-
+          <Titulo text="Formulário de reciclagem" />
+          <Text>Preencha o formulário abaixo para utilizar a lixeira inteligente e realizar a reciclagem do eletrônico desejado.</Text>
+          <Text>Selecione a Categoria</Text>
           <View style={styles.grid}>
             {categorias.map((item) => (
               <TouchableOpacity
@@ -141,11 +197,7 @@ export default function ReciclarScreen({ navigation }) {
                 onChangeText={setQuantidade}
               />
 
-              {carregando ? (
-                <ActivityIndicator size="large" color={colors.secundario} style={{ marginTop: 20 }} />
-              ) : (
-                <BotaoPrimario text="Confirmar Reciclagem" onPress={handleConfirmar} />
-              )}
+              <BotaoPrimario text="Confirmar Reciclagem" onPress={handleConfirmar} />
             </>
           )}
         </ScrollView>
@@ -155,6 +207,22 @@ export default function ReciclarScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  spinnerConta: {
+    marginTop: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 8,
+    borderColor: colors.secundario + '40', // fundo mais claro do spinner
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  spinnerContainer: {
+    marginTop: 30,
+    alignSelf: 'center',
+    transform: [{ scale: 1.5 }], // aumenta a espessura visual do spinner
+  },
   container: {
     flexGrow: 1,
     backgroundColor: '#E8F5E9',
